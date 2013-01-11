@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Ad Configuration load-balancer</title>
+<meta name="description"
+	content="Sample algorithm for ad load balancing" />
+
+<!--[if lt IE 8]>
+  	<![endif]-->
+
+<script type="text/javascript">
+	//<![CDATA[
+
+	// banner ratio
+	var adsConfig = {
+		banner1 : 20,
+		banner2 : 30,
+		banner3 : 50
+	};
+
+	var adsImpression = {};
+	for(a in adsConfig) {
+		adsImpression[a] = 0;
+	}
+	
+	var adsBalancer = [];
+
+	var banners = function() {
+		for (ad in adsConfig) {
+			var adPercent = adsConfig[ad];
+
+			// determinate first ad
+			/*
+			 for (a in adsConfig) {
+				var adPercentCompare = adsConfig[a];
+				var compareRatio = adPercent / adPercentCompare;
+
+				if (adPercent > adPercentCompare) {
+					if (adsImpression[ad] == 0) {
+						adsImpression[ad] += 1;
+						adsBalancer.push(ad);
+					}
+					break;
+				}
+			}
+			*/
+			
+			// exclude first banner from the count
+			adsImpression[ad] += 1;
+			adsBalancer.push(ad);
+
+			for (a in adsConfig) {
+				var configRatio = Math
+						.round((adsConfig[a] / adsConfig[ad]) * 100) / 100;
+
+				var liveRatio = Math
+						.round((adsImpression[a] / adsImpression[ad]) * 100) / 100;
+
+				console.log(ad + " " + a + " Live ratio " + liveRatio
+						+ " config ratio " + configRatio + " while " + (liveRatio > configRatio));
+			
+				while (liveRatio > configRatio) {
+					adsImpression[a] -= 1;
+					adsBalancer.pop(a);
+
+					liveRatio = Math
+							.round((adsImpression[a] / adsImpression[ad]) * 100) / 100;
+					console.log("case 1 " + (liveRatio > configRatio));
+				}
+			}
+		}
+
+	};
+
+	var i = 0;
+	while (i < 100) {
+		banners();
+		i++;
+	}
+
+	var m = "";
+	for (i in adsBalancer) {
+		m += adsBalancer[i] + "<br />";
+	}
+
+	console.log(adsImpression);
+
+	var adsAmount = 0;
+	for (a in adsImpression) {
+		adsAmount += adsImpression[a];
+	}
+
+	var ratioResult = [];
+	for (a in adsImpression) {
+		var r = (adsImpression[a] / adsAmount) * 100;
+		ratioResult.push(a + " " + Math.round(r * 100)/100 + "%");
+	}
+	
+	var m = "Total ads views: " + adsAmount;
+	m += ", ratio " + ratioResult;
+	
+	console.log("total ads views: " + adsAmount +", ratio "+ ratioResult);	
+
+	window.addEventListener("load", function() {
+		document.getElementById("s").innerHTML = m;
+	});
+	//]]>
+</script>
+</head>
+<body>
+	<div id="s"></div>
+</body>
+</html>
